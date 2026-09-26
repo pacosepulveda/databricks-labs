@@ -1,11 +1,11 @@
 # M01 — Laboratorios Learn by Doing
-## Hadoop real con Dataproc + puente hacia Spark y Databricks
+## Hadoop real en Azure + puente hacia Spark y Databricks
 
 **Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion  
 **Documento:** Enunciados para alumnos  
 **Metodología:** Learn by Doing  
 **Modalidad:** Individual  
-**Entornos:** Google Cloud Dataproc + Azure Databricks  
+**Entornos:** Hadoop sobre Azure Virtual Machines + Azure Databricks  
 **Nivel:** Introductorio–intermedio
 
 ---
@@ -34,27 +34,31 @@ Trabajarás directamente con HDFS, NameNode, DataNodes, YARN, ResourceManager, N
 
 # 2. Entornos del módulo
 
-## Entorno A — Hadoop real
+## Entorno A — Hadoop real en Azure
 
-El instructor proporcionará acceso a un clúster Dataproc compartido:
+El instructor proporcionará acceso a un clúster Hadoop compartido desplegado sobre Azure Virtual Machines:
 
 ```text
-Dataproc
+Azure Virtual Network
 │
-├── Master
+├── HADOOP-MASTER
 │   ├── HDFS NameNode
 │   └── YARN ResourceManager
 │
-├── Worker 1
+├── HADOOP-W01
 │   ├── HDFS DataNode
 │   └── YARN NodeManager
 │
-└── Worker 2
+├── HADOOP-W02
+│   ├── HDFS DataNode
+│   └── YARN NodeManager
+│
+└── HADOOP-W03
     ├── HDFS DataNode
     └── YARN NodeManager
 ```
 
-Cada alumno tendrá un directorio HDFS individual:
+Cada alumno tendrá un usuario Linux individual, acceso SSH al nodo master y un directorio HDFS individual:
 
 ```text
 /training/<student_id>
@@ -97,21 +101,18 @@ Acceder al nodo master y comprobar que estamos trabajando en un clúster Hadoop 
 El instructor te proporcionará:
 
 ```text
-PROJECT_ID
-ZONE
-MASTER_NAME
+MASTER_HOST
+student_id
+credencial de acceso
 ```
 
-Abre Google Cloud Shell y configura el proyecto:
+Desde PowerShell, Terminal o cualquier cliente OpenSSH, conecta al master creando además dos túneles locales para las interfaces web de Hadoop:
 
 ```bash
-gcloud config set project <PROJECT_ID>
-```
-
-Conecta al master:
-
-```bash
-gcloud compute ssh <MASTER_NAME> --zone=<ZONE>
+ssh \
+  -L 9870:127.0.0.1:9870 \
+  -L 8088:127.0.0.1:8088 \
+  <student_id>@<MASTER_HOST>
 ```
 
 Una vez dentro:
@@ -128,7 +129,7 @@ yarn version
 
 1. ¿Estás conectado a tu ordenador local o al nodo master?
 2. ¿Qué tecnologías aparecen instaladas?
-3. ¿Por qué no hemos instalado Hadoop manualmente?
+3. ¿Por qué no has tenido que instalar Hadoop en tu equipo?
 
 ---
 
@@ -284,10 +285,12 @@ Busca:
 
 ## Ejercicio 7 — Abrir el NameNode
 
-Desde Dataproc → **Web Interfaces**, abre:
+Mantén abierta la conexión SSH del ejercicio 1.
+
+En tu navegador abre:
 
 ```text
-HDFS NameNode
+http://localhost:9870
 ```
 
 Busca:
@@ -314,7 +317,7 @@ hdfs dfs -rm -r -f   /training/<student_id>/output_wordcount
 Ejecuta:
 
 ```bash
-hadoop jar   /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar   wordcount   /training/<student_id>/input   /training/<student_id>/output_wordcount
+hadoop jar   "$HADOOP_HOME"/share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar   wordcount   /training/<student_id>/input   /training/<student_id>/output_wordcount
 ```
 
 Observa la salida y busca referencias a map, reduce, application y progress.
@@ -353,13 +356,11 @@ Ejecuta:
 yarn application -list -appStates ALL
 ```
 
-Ahora abre:
+En tu navegador abre:
 
 ```text
-YARN ResourceManager
+http://localhost:8088
 ```
-
-desde Dataproc → Web Interfaces.
 
 Busca:
 
@@ -622,8 +623,8 @@ Al terminar deberías poder explicar:
 
 # 10. Referencias oficiales
 
-- [Dataproc overview](https://cloud.google.com/dataproc/docs/concepts/overview)
-- [Dataproc Component Gateway](https://cloud.google.com/dataproc/docs/concepts/accessing/dataproc-gateways)
+- [Azure Linux virtual machines](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/)
+- [Azure Network Security Groups](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview)
 - [HDFS Architecture](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html)
 - [YARN Architecture](https://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
 - [MapReduce Tutorial](https://hadoop.apache.org/docs/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html)
