@@ -6,7 +6,7 @@ Repositorio de enunciados de laboratorio del curso:
 
 ## Contenido
 
-- `M01/` — Hadoop real con Dataproc + puente hacia Spark y Databricks
+- `M01/` — Hadoop real en Azure + puente hacia Spark y Databricks
 - `M02/` — Apache Spark: DataFrames, ejecución distribuida, SQL y optimización
 - `M03/` — Databricks: workspace, compute, Unity Catalog, SQL, Jobs, AI/BI y MLflow
 - `M04/` — Delta Lake: ACID, DML, MERGE, schema, history, time travel y optimización
