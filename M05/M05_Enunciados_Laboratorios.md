@@ -998,3 +998,217 @@ ORDER BY transaction_date;
 ¿Por qué Auto Loader no debería volver a tratar todos los ficheros como nuevos en cada ejecución normal?
 
 ---
+# 28. Práctica autónoma A — Mini lakehouse completo
+
+Sin copiar una solución paso a paso, construye:
+
+```text
+Bronze
+customers_raw
+products_raw
+transactions_raw
+
+Silver
+customers
+products
+transactions
+sales_enriched
+
+Gold
+daily_sales
+sales_by_country
+product_performance
+```
+
+Requisitos:
+
+- Bronze conserva metadata;
+- Silver realiza tipado;
+- Silver contiene al menos una regla de calidad;
+- Silver deduplica;
+- Silver integra clientes/productos/transacciones;
+- Gold contiene métricas de negocio;
+- al menos una Gold table se consulta desde Databricks SQL.
+
+---
+
+# 29. Práctica autónoma B — Calidad y quarantine
+
+Introduce o utiliza un pequeño lote con datos inválidos.
+
+Debes:
+
+1. conservar el fichero original en landing/Bronze;
+2. identificar filas inválidas;
+3. crear una quarantine;
+4. mantener Silver libre de esos registros;
+5. contar válidos e inválidos;
+6. explicar por qué no has borrado el origen.
+
+---
+
+# 30. Práctica autónoma C — Incrementalidad
+
+Añade un nuevo fichero de transacciones.
+
+Debes conseguir que:
+
+```text
+Bronze aumente
+Silver incorpore cambios sin duplicar
+Gold refleje los nuevos datos
+```
+
+Utiliza:
+
+- `MERGE`;
+- o el mecanismo declarativo que haya indicado el instructor.
+
+Demuestra con consultas antes/después qué ha cambiado.
+
+---
+
+# 31. Práctica autónoma D — Producto Gold
+
+Construye un producto Gold adicional que responda a una pregunta de negocio.
+
+Opciones:
+
+```text
+customer_360
+revenue_by_category
+monthly_sales
+top_customers
+```
+
+Debe incluir:
+
+1. una definición clara de la métrica;
+2. una consulta SQL;
+3. una tabla/materialized view Gold;
+4. una visualización;
+5. una explicación de por qué pertenece a Gold.
+
+---
+
+# 32. Práctica autónoma E — Explicar la arquitectura
+
+Dibuja o documenta:
+
+```text
+Sources
+  ↓
+Landing
+  ↓
+Bronze
+  ↓
+Silver
+  ↓
+Gold
+  ↓
+Consumer
+```
+
+Para cada capa explica:
+
+```text
+objetivo
+tipo de datos
+transformaciones permitidas
+usuario principal
+qué NO debería hacerse ahí
+```
+
+---
+
+# 33. Reto final del curso
+
+El instructor proporciona un nuevo fichero:
+
+```text
+transactions_final.csv
+```
+
+Contiene una combinación de:
+
+- registros nuevos;
+- duplicados;
+- un dato inválido;
+- una corrección sobre una transacción anterior.
+
+Sin un guion paso a paso debes:
+
+1. introducirlo en la landing zone;
+2. conservarlo en Bronze;
+3. validar y deduplicar;
+4. aplicar cambios a Silver;
+5. actualizar Gold;
+6. comprobar lineage;
+7. demostrar que las métricas finales son coherentes;
+8. explicar qué componentes de M01–M05 han intervenido.
+
+---
+
+# 34. Qué conceptos de módulos anteriores aparecen aquí
+
+## M01
+
+```text
+procesamiento distribuido
+almacenamiento vs compute
+```
+
+## M02
+
+```text
+DataFrames
+SQL
+particiones
+shuffle
+joins
+```
+
+## M03
+
+```text
+Workspace
+Unity Catalog
+SQL Warehouse
+Lakeflow
+AI/BI
+```
+
+## M04
+
+```text
+Delta
+MERGE
+schema
+history
+```
+
+## M05
+
+```text
+Bronze
+Silver
+Gold
+quality
+incrementality
+lineage
+```
+
+---
+
+# 35. Referencias oficiales
+
+- [Medallion architecture](https://learn.microsoft.com/en-us/azure/databricks/lakehouse/medallion)
+- [Lakeflow Pipelines](https://learn.microsoft.com/en-us/azure/databricks/ldp/concepts/)
+- [Lakeflow Pipelines tutorial](https://learn.microsoft.com/en-us/azure/databricks/ldp/tutorial-get-started)
+- [Auto Loader](https://learn.microsoft.com/en-us/azure/databricks/ingestion/cloud-object-storage/auto-loader/)
+- [Auto Loader best practices](https://learn.microsoft.com/en-us/azure/databricks/ingestion/cloud-object-storage/auto-loader/best-practices)
+- [`read_files`](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/read_files)
+- [Expectations](https://learn.microsoft.com/en-us/azure/databricks/ldp/expectations)
+- [Expectation patterns](https://learn.microsoft.com/en-us/azure/databricks/ldp/expectation-patterns)
+- [Unity Catalog lineage](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/data-lineage)
+- [MERGE](https://learn.microsoft.com/en-us/azure/databricks/delta/merge)
