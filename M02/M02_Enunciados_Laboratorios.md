@@ -1,11 +1,10 @@
-# M02 — Laboratorios Learn by Doing
+# M02 — Laboratorios
 ## Apache Spark: DataFrames, ejecución distribuida, SQL y optimización
 
-**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion  
-**Documento:** Enunciados para alumnos  
-**Metodología:** Learn by Doing  
-**Modalidad:** Individual  
-**Entorno:** Azure Databricks compartido  
+**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion
+**Documento:** Enunciados para participantes
+**Modalidad:** Individual
+**Entorno:** Azure Databricks compartido
 **Nivel:** Introductorio–intermedio
 
 ---
@@ -18,25 +17,25 @@ La secuencia será:
 
 ```text
 DataFrame
-   ↓
+ ↓
 Schema
-   ↓
+ ↓
 Transformations
-   ↓
+ ↓
 Actions
-   ↓
+ ↓
 Lazy evaluation
-   ↓
+ ↓
 Partitions
-   ↓
+ ↓
 Jobs / Stages / Tasks
-   ↓
+ ↓
 Shuffle
-   ↓
+ ↓
 Spark SQL
-   ↓
+ ↓
 Joins
-   ↓
+ ↓
 Optimization
 ```
 
@@ -46,7 +45,7 @@ No se pretende memorizar APIs. El objetivo es observar qué hace Spark y poder e
 
 # 2. Entorno
 
-Todos los alumnos comparten:
+Todos los participantes comparten:
 
 ```text
 1 Azure Databricks Workspace
@@ -54,7 +53,7 @@ Todos los alumnos comparten:
 1 catálogo training
 ```
 
-Cada alumno tiene:
+Cada participante tiene:
 
 ```text
 training.<student_id>
@@ -72,7 +71,7 @@ Los datos compartidos del módulo están en:
 /Volumes/training/shared/source/m02/
 ```
 
-No modifiques datos ni objetos de otros alumnos.
+No modifiques datos ni objetos de otros participantes.
 
 ---
 
@@ -114,10 +113,10 @@ Comprobar que Spark trabaja con datos estructurados y tipos.
 
 ```python
 sales = (
-    spark.read
-    .option("header", "true")
-    .option("inferSchema", "true")
-    .csv("/Volumes/training/shared/source/m02/sales/")
+ spark.read
+ .option("header", "true")
+ .option("inferSchema", "true")
+ .csv("/Volumes/training/shared/source/m02/sales/")
 )
 ```
 
@@ -146,19 +145,19 @@ Construir un pipeline sin pedir todavía un resultado final.
 from pyspark.sql import functions as F
 
 spain_sales = (
-    sales
-    .filter(F.col("country") == "ES")
-    .select(
-        "sale_id",
-        "customer_id",
-        "product_id",
-        "quantity",
-        "unit_price"
-    )
-    .withColumn(
-        "amount",
-        F.col("quantity") * F.col("unit_price")
-    )
+ sales
+ .filter(F.col("country") == "ES")
+ .select(
+ "sale_id",
+ "customer_id",
+ "product_id",
+ "quantity",
+ "unit_price"
+ )
+ .withColumn(
+ "amount",
+ F.col("quantity") * F.col("unit_price")
+ )
 )
 ```
 
@@ -200,7 +199,7 @@ Explica con tus palabras:
 
 ```text
 Transformation ≠ ejecución inmediata
-Action         = solicita un resultado
+Action = solicita un resultado
 ```
 
 ---
@@ -219,10 +218,10 @@ my_parquet = "/Volumes/training/<student_id>/work/m02/sales_es_parquet"
 
 ```python
 (
-    spain_sales
-    .write
-    .mode("overwrite")
-    .parquet(my_parquet)
+ spain_sales
+ .write
+ .mode("overwrite")
+ .parquet(my_parquet)
 )
 ```
 
@@ -257,14 +256,14 @@ Observar cómo Spark reparte registros en particiones sin usar la API RDD.
 
 ```python
 partition_distribution = (
-    sales
-    .withColumn(
-        "partition_id",
-        F.spark_partition_id()
-    )
-    .groupBy("partition_id")
-    .count()
-    .orderBy("partition_id")
+ sales
+ .withColumn(
+ "partition_id",
+ F.spark_partition_id()
+ )
+ .groupBy("partition_id")
+ .count()
+ .orderBy("partition_id")
 )
 
 display(partition_distribution)
@@ -288,11 +287,11 @@ sales_8 = sales.repartition(8)
 
 ```python
 display(
-    sales_8
-    .withColumn("partition_id", F.spark_partition_id())
-    .groupBy("partition_id")
-    .count()
-    .orderBy("partition_id")
+ sales_8
+ .withColumn("partition_id", F.spark_partition_id())
+ .groupBy("partition_id")
+ .count()
+ .orderBy("partition_id")
 )
 ```
 
@@ -304,11 +303,11 @@ sales_2 = sales_8.coalesce(2)
 
 ```python
 display(
-    sales_2
-    .withColumn("partition_id", F.spark_partition_id())
-    .groupBy("partition_id")
-    .count()
-    .orderBy("partition_id")
+ sales_2
+ .withColumn("partition_id", F.spark_partition_id())
+ .groupBy("partition_id")
+ .count()
+ .orderBy("partition_id")
 )
 ```
 
@@ -326,7 +325,7 @@ display(
 
 ```python
 filtered = sales.filter(
-    F.col("quantity") >= 3
+ F.col("quantity") >= 3
 )
 
 filtered.explain("formatted")
@@ -336,13 +335,13 @@ filtered.explain("formatted")
 
 ```python
 by_country = (
-    sales
-    .groupBy("country")
-    .agg(
-        F.sum(
-            F.col("quantity") * F.col("unit_price")
-        ).alias("revenue")
-    )
+ sales
+ .groupBy("country")
+ .agg(
+ F.sum(
+ F.col("quantity") * F.col("unit_price")
+ ).alias("revenue")
+ )
 )
 
 by_country.explain("formatted")
@@ -368,12 +367,12 @@ Ejecuta:
 
 ```python
 result = (
-    sales
-    .repartition(8)
-    .groupBy("country")
-    .agg(
-        F.sum("quantity").alias("units")
-    )
+ sales
+ .repartition(8)
+ .groupBy("country")
+ .agg(
+ F.sum("quantity").alias("units")
+ )
 )
 
 display(result)
@@ -404,7 +403,7 @@ Observa:
 - shuffle read/write si aparece;
 - DAG.
 
-> El compute es compartido, por lo que puede haber actividad de otros alumnos. El objetivo es reconocer la estructura Job → Stage → Task, no memorizar un Job ID concreto.
+> El compute es compartido, por lo que puede haber actividad de otros participantes. El objetivo es reconocer la estructura Job → Stage → Task, no memorizar un Job ID concreto.
 
 ---
 
@@ -420,14 +419,14 @@ sales.createOrReplaceTempView("sales_m02")
 
 ```python
 df_result = (
-    sales
-    .groupBy("country")
-    .agg(
-        F.sum(
-            F.col("quantity") * F.col("unit_price")
-        ).alias("revenue")
-    )
-    .orderBy(F.desc("revenue"))
+ sales
+ .groupBy("country")
+ .agg(
+ F.sum(
+ F.col("quantity") * F.col("unit_price")
+ ).alias("revenue")
+ )
+ .orderBy(F.desc("revenue"))
 )
 
 display(df_result)
@@ -437,8 +436,8 @@ display(df_result)
 
 ```sql
 SELECT
-    country,
-    SUM(quantity * unit_price) AS revenue
+ country,
+ SUM(quantity * unit_price) AS revenue
 FROM sales_m02
 GROUP BY country
 ORDER BY revenue DESC;
@@ -458,10 +457,10 @@ Lee clientes:
 
 ```python
 customers = (
-    spark.read
-    .option("header", "true")
-    .option("inferSchema", "true")
-    .csv("/Volumes/training/shared/source/m02/customers/")
+ spark.read
+ .option("header", "true")
+ .option("inferSchema", "true")
+ .csv("/Volumes/training/shared/source/m02/customers/")
 )
 
 customers.count()
@@ -472,27 +471,27 @@ Join:
 
 ```python
 sales_with_customer = (
-    sales
-    .join(
-        customers,
-        on="customer_id",
-        how="inner"
-    )
+ sales
+ .join(
+ customers,
+ on="customer_id",
+ how="inner"
+ )
 )
 ```
 
 ```python
 display(
-    sales_with_customer
-    .select(
-        "sale_id",
-        "customer_id",
-        "customer_name",
-        "country",
-        "quantity",
-        "unit_price"
-    )
-    .limit(20)
+ sales_with_customer
+ .select(
+ "sale_id",
+ "customer_id",
+ "customer_name",
+ "country",
+ "quantity",
+ "unit_price"
+ )
+ .limit(20)
 )
 ```
 
@@ -508,12 +507,12 @@ sales_with_customer.explain("formatted")
 from pyspark.sql.functions import broadcast
 
 broadcast_join = (
-    sales
-    .join(
-        broadcast(customers),
-        on="customer_id",
-        how="inner"
-    )
+ sales
+ .join(
+ broadcast(customers),
+ on="customer_id",
+ how="inner"
+ )
 )
 
 broadcast_join.explain("formatted")
@@ -537,12 +536,12 @@ BroadcastHashJoin
 
 ```python
 high_value = (
-    sales
-    .withColumn(
-        "amount",
-        F.col("quantity") * F.col("unit_price")
-    )
-    .filter(F.col("amount") >= 200)
+ sales
+ .withColumn(
+ "amount",
+ F.col("quantity") * F.col("unit_price")
+ )
+ .filter(F.col("amount") >= 200)
 )
 ```
 
@@ -555,9 +554,9 @@ Reutiliza:
 
 ```python
 display(
-    high_value
-    .groupBy("country")
-    .agg(F.sum("amount").alias("revenue"))
+ high_value
+ .groupBy("country")
+ .agg(F.sum("amount").alias("revenue"))
 )
 ```
 
@@ -587,10 +586,10 @@ Ejecuta:
 
 ```python
 aqe_test = (
-    sales
-    .repartition(16)
-    .groupBy("country")
-    .agg(F.sum("quantity").alias("units"))
+ sales
+ .repartition(16)
+ .groupBy("country")
+ .agg(F.sum("quantity").alias("units"))
 )
 
 aqe_test.explain("formatted")
@@ -618,26 +617,26 @@ Crea deliberadamente datos desequilibrados:
 
 ```python
 skewed = (
-    spark.range(0, 500_000)
-    .withColumn(
-        "group_key",
-        F.when(F.col("id") < 450_000, "HOT")
-         .otherwise(
-             F.concat(
-                 F.lit("K"),
-                 (F.col("id") % 10).cast("string")
-             )
-         )
-    )
+ spark.range(0, 500_000)
+ .withColumn(
+ "group_key",
+ F.when(F.col("id") < 450_000, "HOT")
+ .otherwise(
+ F.concat(
+ F.lit("K"),
+ (F.col("id") % 10).cast("string")
+ )
+ )
+ )
 )
 ```
 
 ```python
 display(
-    skewed
-    .groupBy("group_key")
-    .count()
-    .orderBy(F.desc("count"))
+ skewed
+ .groupBy("group_key")
+ .count()
+ .orderBy(F.desc("count"))
 )
 ```
 
@@ -649,14 +648,14 @@ skewed_by_key = skewed.repartition(8, "group_key")
 
 ```python
 display(
-    skewed_by_key
-    .withColumn(
-        "partition_id",
-        F.spark_partition_id()
-    )
-    .groupBy("partition_id")
-    .count()
-    .orderBy("partition_id")
+ skewed_by_key
+ .withColumn(
+ "partition_id",
+ F.spark_partition_id()
+ )
+ .groupBy("partition_id")
+ .count()
+ .orderBy("partition_id")
 )
 ```
 
@@ -674,10 +673,10 @@ Lee productos:
 
 ```python
 products = (
-    spark.read
-    .option("header", "true")
-    .option("inferSchema", "true")
-    .csv("/Volumes/training/shared/source/m02/products/")
+ spark.read
+ .option("header", "true")
+ .option("inferSchema", "true")
+ .csv("/Volumes/training/shared/source/m02/products/")
 )
 ```
 
@@ -685,15 +684,15 @@ Normaliza:
 
 ```python
 clean_products = (
-    products
-    .withColumn(
-        "product_name_clean",
-        F.upper(F.trim(F.col("product_name")))
-    )
-    .withColumn(
-        "category_clean",
-        F.upper(F.trim(F.col("category")))
-    )
+ products
+ .withColumn(
+ "product_name_clean",
+ F.upper(F.trim(F.col("product_name")))
+ )
+ .withColumn(
+ "category_clean",
+ F.upper(F.trim(F.col("category")))
+ )
 )
 
 display(clean_products.limit(20))
@@ -715,19 +714,19 @@ Sustituye `<student_id>`:
 
 ```python
 stream = (
-    spark.readStream
-    .format("rate")
-    .option("rowsPerSecond", 5)
-    .load()
+ spark.readStream
+ .format("rate")
+ .option("rowsPerSecond", 5)
+ .load()
 )
 
 query = (
-    stream
-    .writeStream
-    .format("memory")
-    .queryName("m02_rate_<student_id>")
-    .outputMode("append")
-    .start()
+ stream
+ .writeStream
+ .format("memory")
+ .queryName("m02_rate_<student_id>")
+ .outputMode("append")
+ .start()
 )
 ```
 
@@ -735,16 +734,16 @@ Espera unos segundos y consulta:
 
 ```python
 display(
-    spark.sql(
-        "SELECT * FROM m02_rate_<student_id> "
-        "ORDER BY timestamp DESC LIMIT 20"
-    )
+ spark.sql(
+ "SELECT * FROM m02_rate_<student_id> "
+ "ORDER BY timestamp DESC LIMIT 20"
+ )
 )
 ```
 
 ```python
 spark.sql(
-    "SELECT COUNT(*) FROM m02_rate_<student_id>"
+ "SELECT COUNT(*) FROM m02_rate_<student_id>"
 ).show()
 ```
 
@@ -855,23 +854,23 @@ Explica:
 
 ```text
 Source data
-    ↓
+ ↓
 DataFrame
-    ↓
+ ↓
 Transformations
-    ↓
+ ↓
 Logical plan
-    ↓
+ ↓
 Physical plan
-    ↓
+ ↓
 Job
-    ↓
+ ↓
 Stages
-    ↓
+ ↓
 Tasks over partitions
-    ↓
+ ↓
 Shuffle when required
-    ↓
+ ↓
 Result
 ```
 
