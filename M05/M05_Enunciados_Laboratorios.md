@@ -1,11 +1,10 @@
-# M05 — Laboratorios Learn by Doing
+# M05 — Laboratorios
 ## Medallion Architecture: Bronze, Silver, Gold, calidad, incrementalidad y Lakeflow
 
-**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion  
-**Documento:** Enunciados para alumnos  
-**Metodología:** Learn by Doing  
-**Modalidad:** Individual  
-**Entorno:** Azure Databricks compartido  
+**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion
+**Documento:** Enunciados para participantes
+**Modalidad:** Individual
+**Entorno:** Azure Databricks compartido
 **Nivel:** Introductorio–intermedio
 
 ---
@@ -24,7 +23,7 @@ Databricks
 Delta Lake
 +
 Unity Catalog
-        ↓
+ ↓
 Medallion Architecture
 ```
 
@@ -32,16 +31,16 @@ La secuencia será:
 
 ```text
 Source files
-   ↓
+ ↓
 Bronze
 raw + metadata
-   ↓
+ ↓
 Silver
 clean + validate + deduplicate
-   ↓
+ ↓
 Gold
 business-ready
-   ↓
+ ↓
 SQL / Dashboard
 ```
 
@@ -67,7 +66,7 @@ Todos utilizamos:
 1 catálogo training
 ```
 
-Cada alumno tiene tres schemas:
+Cada participante tiene tres schemas:
 
 ```text
 training.<student_id>_bronze
@@ -95,7 +94,7 @@ Los datos originales proporcionados por el instructor se encuentran en:
 /Volumes/training/shared/m05_source/
 ```
 
-No modifiques objetos de otros alumnos.
+No modifiques objetos de otros participantes.
 
 ---
 
@@ -175,8 +174,8 @@ Copia el primer lote de transacciones a tu landing:
 
 ```python
 dbutils.fs.cp(
-    "/Volumes/training/shared/m05_source/transactions_day1.csv",
-    "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day1.csv"
+ "/Volumes/training/shared/m05_source/transactions_day1.csv",
+ "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day1.csv"
 )
 ```
 
@@ -184,13 +183,13 @@ Copia también:
 
 ```python
 dbutils.fs.cp(
-    "/Volumes/training/shared/m05_source/customers.csv",
-    "/Volumes/training/<student_id>_bronze/landing/reference/customers.csv"
+ "/Volumes/training/shared/m05_source/customers.csv",
+ "/Volumes/training/<student_id>_bronze/landing/reference/customers.csv"
 )
 
 dbutils.fs.cp(
-    "/Volumes/training/shared/m05_source/products.csv",
-    "/Volumes/training/<student_id>_bronze/landing/reference/products.csv"
+ "/Volumes/training/shared/m05_source/products.csv",
+ "/Volumes/training/<student_id>_bronze/landing/reference/products.csv"
 )
 ```
 
@@ -230,20 +229,20 @@ Ejecuta:
 from pyspark.sql import functions as F
 
 bronze_transactions = (
-    spark.read
-    .option("header", "true")
-    .option("inferSchema", "false")
-    .csv(
-        "/Volumes/training/<student_id>_bronze/landing/transactions/"
-    )
-    .withColumn(
-        "_ingest_timestamp",
-        F.current_timestamp()
-    )
-    .withColumn(
-        "_source_file",
-        F.input_file_name()
-    )
+ spark.read
+ .option("header", "true")
+ .option("inferSchema", "false")
+ .csv(
+ "/Volumes/training/<student_id>_bronze/landing/transactions/"
+ )
+ .withColumn(
+ "_ingest_timestamp",
+ F.current_timestamp()
+ )
+ .withColumn(
+ "_source_file",
+ F.input_file_name()
+ )
 )
 ```
 
@@ -258,10 +257,10 @@ Guarda:
 
 ```python
 bronze_transactions.write \
-    .mode("overwrite") \
-    .saveAsTable(
-        "training.<student_id>_bronze.transactions_raw"
-    )
+ .mode("overwrite") \
+ .saveAsTable(
+ "training.<student_id>_bronze.transactions_raw"
+ )
 ```
 
 ---
@@ -289,42 +288,42 @@ Carga clientes:
 
 ```python
 customers_raw = (
-    spark.read
-    .option("header", "true")
-    .option("inferSchema", "false")
-    .csv(
-        "/Volumes/training/<student_id>_bronze/landing/reference/customers.csv"
-    )
-    .withColumn("_ingest_timestamp", F.current_timestamp())
-    .withColumn("_source_file", F.input_file_name())
+ spark.read
+ .option("header", "true")
+ .option("inferSchema", "false")
+ .csv(
+ "/Volumes/training/<student_id>_bronze/landing/reference/customers.csv"
+ )
+ .withColumn("_ingest_timestamp", F.current_timestamp())
+ .withColumn("_source_file", F.input_file_name())
 )
 
 customers_raw.write \
-    .mode("overwrite") \
-    .saveAsTable(
-        "training.<student_id>_bronze.customers_raw"
-    )
+ .mode("overwrite") \
+ .saveAsTable(
+ "training.<student_id>_bronze.customers_raw"
+ )
 ```
 
 Repite para productos:
 
 ```python
 products_raw = (
-    spark.read
-    .option("header", "true")
-    .option("inferSchema", "false")
-    .csv(
-        "/Volumes/training/<student_id>_bronze/landing/reference/products.csv"
-    )
-    .withColumn("_ingest_timestamp", F.current_timestamp())
-    .withColumn("_source_file", F.input_file_name())
+ spark.read
+ .option("header", "true")
+ .option("inferSchema", "false")
+ .csv(
+ "/Volumes/training/<student_id>_bronze/landing/reference/products.csv"
+ )
+ .withColumn("_ingest_timestamp", F.current_timestamp())
+ .withColumn("_source_file", F.input_file_name())
 )
 
 products_raw.write \
-    .mode("overwrite") \
-    .saveAsTable(
-        "training.<student_id>_bronze.products_raw"
-    )
+ .mode("overwrite") \
+ .saveAsTable(
+ "training.<student_id>_bronze.products_raw"
+ )
 ```
 
 ---
@@ -351,8 +350,8 @@ Ejecuta:
 
 ```sql
 SELECT
-    COUNT(*) AS rows,
-    COUNT(DISTINCT transaction_id) AS distinct_transactions
+ COUNT(*) AS rows,
+ COUNT(DISTINCT transaction_id) AS distinct_transactions
 FROM training.<student_id>_bronze.transactions_raw;
 ```
 
@@ -374,15 +373,15 @@ Ejecuta:
 CREATE OR REPLACE TABLE training.<student_id>_silver.transactions_typed
 AS
 SELECT
-    CAST(transaction_id AS BIGINT) AS transaction_id,
-    customer_id,
-    product_id,
-    CAST(quantity AS INT) AS quantity,
-    CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
-    UPPER(TRIM(country)) AS country,
-    TO_DATE(transaction_date) AS transaction_date,
-    _ingest_timestamp,
-    _source_file
+ CAST(transaction_id AS BIGINT) AS transaction_id,
+ customer_id,
+ product_id,
+ CAST(quantity AS INT) AS quantity,
+ CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
+ UPPER(TRIM(country)) AS country,
+ TO_DATE(transaction_date) AS transaction_date,
+ _ingest_timestamp,
+ _source_file
 FROM training.<student_id>_bronze.transactions_raw;
 ```
 
@@ -412,12 +411,12 @@ AS
 SELECT *
 FROM training.<student_id>_silver.transactions_typed
 WHERE
-    transaction_id IS NULL
-    OR customer_id IS NULL
-    OR product_id IS NULL
-    OR quantity <= 0
-    OR unit_price < 0
-    OR transaction_date IS NULL;
+ transaction_id IS NULL
+ OR customer_id IS NULL
+ OR product_id IS NULL
+ OR quantity <= 0
+ OR unit_price < 0
+ OR transaction_date IS NULL;
 ```
 
 Consulta:
@@ -435,12 +434,12 @@ AS
 SELECT *
 FROM training.<student_id>_silver.transactions_typed
 WHERE
-    transaction_id IS NOT NULL
-    AND customer_id IS NOT NULL
-    AND product_id IS NOT NULL
-    AND quantity > 0
-    AND unit_price >= 0
-    AND transaction_date IS NOT NULL;
+ transaction_id IS NOT NULL
+ AND customer_id IS NOT NULL
+ AND product_id IS NOT NULL
+ AND quantity > 0
+ AND unit_price >= 0
+ AND transaction_date IS NOT NULL;
 ```
 
 ### Preguntas
@@ -456,8 +455,8 @@ Busca duplicados:
 
 ```sql
 SELECT
-    transaction_id,
-    COUNT(*) AS occurrences
+ transaction_id,
+ COUNT(*) AS occurrences
 FROM training.<student_id>_silver.transactions_valid
 GROUP BY transaction_id
 HAVING COUNT(*) > 1;
@@ -470,13 +469,13 @@ CREATE OR REPLACE TABLE training.<student_id>_silver.transactions
 AS
 SELECT * EXCEPT (rn)
 FROM (
-    SELECT
-        *,
-        ROW_NUMBER() OVER (
-            PARTITION BY transaction_id
-            ORDER BY _ingest_timestamp DESC
-        ) AS rn
-    FROM training.<student_id>_silver.transactions_valid
+ SELECT
+ *,
+ ROW_NUMBER() OVER (
+ PARTITION BY transaction_id
+ ORDER BY _ingest_timestamp DESC
+ ) AS rn
+ FROM training.<student_id>_silver.transactions_valid
 )
 WHERE rn = 1;
 ```
@@ -485,8 +484,8 @@ Comprueba:
 
 ```sql
 SELECT
-    COUNT(*) AS rows,
-    COUNT(DISTINCT transaction_id) AS distinct_ids
+ COUNT(*) AS rows,
+ COUNT(DISTINCT transaction_id) AS distinct_ids
 FROM training.<student_id>_silver.transactions;
 ```
 
@@ -500,10 +499,10 @@ Clientes:
 CREATE OR REPLACE TABLE training.<student_id>_silver.customers
 AS
 SELECT
-    customer_id,
-    TRIM(customer_name) AS customer_name,
-    LOWER(TRIM(email)) AS email,
-    UPPER(TRIM(country)) AS country
+ customer_id,
+ TRIM(customer_name) AS customer_name,
+ LOWER(TRIM(email)) AS email,
+ UPPER(TRIM(country)) AS country
 FROM training.<student_id>_bronze.customers_raw
 WHERE customer_id IS NOT NULL;
 ```
@@ -514,9 +513,9 @@ Productos:
 CREATE OR REPLACE TABLE training.<student_id>_silver.products
 AS
 SELECT
-    product_id,
-    TRIM(product_name) AS product_name,
-    UPPER(TRIM(category)) AS category
+ product_id,
+ TRIM(product_name) AS product_name,
+ UPPER(TRIM(category)) AS category
 FROM training.<student_id>_bronze.products_raw
 WHERE product_id IS NOT NULL;
 ```
@@ -535,22 +534,22 @@ Ejecuta:
 CREATE OR REPLACE TABLE training.<student_id>_silver.sales_enriched
 AS
 SELECT
-    t.transaction_id,
-    t.transaction_date,
-    t.customer_id,
-    c.customer_name,
-    t.product_id,
-    p.product_name,
-    p.category,
-    t.country,
-    t.quantity,
-    t.unit_price,
-    t.quantity * t.unit_price AS amount
+ t.transaction_id,
+ t.transaction_date,
+ t.customer_id,
+ c.customer_name,
+ t.product_id,
+ p.product_name,
+ p.category,
+ t.country,
+ t.quantity,
+ t.unit_price,
+ t.quantity * t.unit_price AS amount
 FROM training.<student_id>_silver.transactions t
 LEFT JOIN training.<student_id>_silver.customers c
-    ON t.customer_id = c.customer_id
+ ON t.customer_id = c.customer_id
 LEFT JOIN training.<student_id>_silver.products p
-    ON t.product_id = p.product_id;
+ ON t.product_id = p.product_id;
 ```
 
 Consulta:
@@ -579,10 +578,10 @@ Crear productos de consumo.
 CREATE OR REPLACE TABLE training.<student_id>_gold.daily_sales
 AS
 SELECT
-    transaction_date,
-    SUM(amount) AS revenue,
-    COUNT(*) AS transactions,
-    AVG(amount) AS avg_ticket
+ transaction_date,
+ SUM(amount) AS revenue,
+ COUNT(*) AS transactions,
+ AVG(amount) AS avg_ticket
 FROM training.<student_id>_silver.sales_enriched
 GROUP BY transaction_date;
 ```
@@ -593,9 +592,9 @@ GROUP BY transaction_date;
 CREATE OR REPLACE TABLE training.<student_id>_gold.sales_by_country
 AS
 SELECT
-    country,
-    SUM(amount) AS revenue,
-    COUNT(*) AS transactions
+ country,
+ SUM(amount) AS revenue,
+ COUNT(*) AS transactions
 FROM training.<student_id>_silver.sales_enriched
 GROUP BY country;
 ```
@@ -606,16 +605,16 @@ GROUP BY country;
 CREATE OR REPLACE TABLE training.<student_id>_gold.product_performance
 AS
 SELECT
-    product_id,
-    product_name,
-    category,
-    SUM(quantity) AS units,
-    SUM(amount) AS revenue
+ product_id,
+ product_name,
+ category,
+ SUM(quantity) AS units,
+ SUM(amount) AS revenue
 FROM training.<student_id>_silver.sales_enriched
 GROUP BY
-    product_id,
-    product_name,
-    category;
+ product_id,
+ product_name,
+ category;
 ```
 
 ---
@@ -659,8 +658,8 @@ Copia el segundo lote:
 
 ```python
 dbutils.fs.cp(
-    "/Volumes/training/shared/m05_source/transactions_day2.csv",
-    "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day2.csv"
+ "/Volumes/training/shared/m05_source/transactions_day2.csv",
+ "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day2.csv"
 )
 ```
 
@@ -701,10 +700,10 @@ USING day2_clean AS source
 ON target.transaction_id = source.transaction_id
 
 WHEN MATCHED THEN
-  UPDATE SET *
+ UPDATE SET *
 
 WHEN NOT MATCHED THEN
-  INSERT *;
+ INSERT *;
 ```
 
 Comprueba:
@@ -747,11 +746,11 @@ La idea será:
 
 ```text
 landing
-   ↓
+ ↓
 Bronze streaming table
-   ↓
+ ↓
 Silver streaming/materialized table
-   ↓
+ ↓
 Gold materialized view
 ```
 
@@ -786,21 +785,21 @@ CREATE OR REFRESH STREAMING TABLE
 training.<student_id>_bronze.transactions_stream_raw
 AS
 SELECT
-    *,
-    _metadata.file_path AS _source_file,
-    current_timestamp() AS _ingest_timestamp
+ *,
+ _metadata.file_path AS _source_file,
+ current_timestamp() AS _ingest_timestamp
 FROM STREAM read_files(
-    '/Volumes/training/<student_id>_bronze/landing/transactions/',
-    format => 'csv',
-    header => true,
-    schema => '
-      transaction_id STRING,
-      customer_id STRING,
-      product_id STRING,
-      quantity STRING,
-      unit_price STRING,
-      country STRING,
-      transaction_date STRING'
+ '/Volumes/training/<student_id>_bronze/landing/transactions/',
+ format => 'csv',
+ header => true,
+ schema => '
+ transaction_id STRING,
+ customer_id STRING,
+ product_id STRING,
+ quantity STRING,
+ unit_price STRING,
+ country STRING,
+ transaction_date STRING'
 );
 ```
 
@@ -828,31 +827,31 @@ Añade:
 ```sql
 CREATE OR REFRESH STREAMING TABLE
 training.<student_id>_silver.transactions_stream_clean (
-    CONSTRAINT valid_transaction_id
-        EXPECT (transaction_id IS NOT NULL)
-        ON VIOLATION DROP ROW,
+ CONSTRAINT valid_transaction_id
+ EXPECT (transaction_id IS NOT NULL)
+ ON VIOLATION DROP ROW,
 
-    CONSTRAINT valid_quantity
-        EXPECT (quantity > 0)
-        ON VIOLATION DROP ROW,
+ CONSTRAINT valid_quantity
+ EXPECT (quantity > 0)
+ ON VIOLATION DROP ROW,
 
-    CONSTRAINT valid_price
-        EXPECT (unit_price >= 0)
-        ON VIOLATION DROP ROW
+ CONSTRAINT valid_price
+ EXPECT (unit_price >= 0)
+ ON VIOLATION DROP ROW
 )
 AS
 SELECT
-    CAST(transaction_id AS BIGINT) AS transaction_id,
-    customer_id,
-    product_id,
-    CAST(quantity AS INT) AS quantity,
-    CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
-    UPPER(TRIM(country)) AS country,
-    TO_DATE(transaction_date) AS transaction_date,
-    _source_file,
-    _ingest_timestamp
+ CAST(transaction_id AS BIGINT) AS transaction_id,
+ customer_id,
+ product_id,
+ CAST(quantity AS INT) AS quantity,
+ CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
+ UPPER(TRIM(country)) AS country,
+ TO_DATE(transaction_date) AS transaction_date,
+ _source_file,
+ _ingest_timestamp
 FROM STREAM(
-    training.<student_id>_bronze.transactions_stream_raw
+ training.<student_id>_bronze.transactions_stream_raw
 );
 ```
 
@@ -879,10 +878,10 @@ CREATE OR REFRESH MATERIALIZED VIEW
 training.<student_id>_gold.daily_sales_mv
 AS
 SELECT
-    transaction_date,
-    SUM(quantity * unit_price) AS revenue,
-    COUNT(*) AS transactions,
-    AVG(quantity * unit_price) AS avg_ticket
+ transaction_date,
+ SUM(quantity * unit_price) AS revenue,
+ COUNT(*) AS transactions,
+ AVG(quantity * unit_price) AS avg_ticket
 FROM training.<student_id>_silver.transactions_stream_clean
 GROUP BY transaction_date;
 ```
@@ -911,11 +910,11 @@ Deberías poder relacionar:
 
 ```text
 landing
-   ↓
+ ↓
 transactions_stream_raw
-   ↓
+ ↓
 transactions_stream_clean
-   ↓
+ ↓
 daily_sales_mv
 ```
 
@@ -971,8 +970,8 @@ Copia un fichero adicional proporcionado por el instructor:
 
 ```python
 dbutils.fs.cp(
-    "/Volumes/training/shared/m05_source/transactions_day3.csv",
-    "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day3.csv"
+ "/Volumes/training/shared/m05_source/transactions_day3.csv",
+ "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day3.csv"
 )
 ```
 
@@ -1097,15 +1096,15 @@ Dibuja o documenta:
 
 ```text
 Sources
-  ↓
+ ↓
 Landing
-  ↓
+ ↓
 Bronze
-  ↓
+ ↓
 Silver
-  ↓
+ ↓
 Gold
-  ↓
+ ↓
 Consumer
 ```
 
