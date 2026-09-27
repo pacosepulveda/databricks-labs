@@ -1,11 +1,10 @@
-# M04 — Laboratorios Learn by Doing
+# M04 — Laboratorios
 ## Delta Lake: ACID, DML, MERGE, schema, history, time travel y optimización
 
-**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion  
-**Documento:** Enunciados para alumnos  
-**Metodología:** Learn by Doing  
-**Modalidad:** Individual  
-**Entorno:** Azure Databricks compartido  
+**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion
+**Documento:** Enunciados para participantes
+**Modalidad:** Individual
+**Entorno:** Azure Databricks compartido
 **Nivel:** Introductorio–intermedio
 
 ---
@@ -18,25 +17,25 @@ La secuencia será:
 
 ```text
 Tabla Delta
-   ↓
+ ↓
 Transaction history
-   ↓
+ ↓
 INSERT
-   ↓
+ ↓
 UPDATE
-   ↓
+ ↓
 DELETE
-   ↓
+ ↓
 MERGE
-   ↓
+ ↓
 Schema enforcement
-   ↓
+ ↓
 Schema evolution
-   ↓
+ ↓
 Time travel
-   ↓
+ ↓
 RESTORE
-   ↓
+ ↓
 VACUUM / optimization
 ```
 
@@ -46,7 +45,7 @@ El objetivo no es memorizar sintaxis, sino comprobar qué propiedades aporta Del
 
 # 2. Entorno
 
-Todos los alumnos comparten:
+Todos los participantes comparten:
 
 ```text
 1 Azure Databricks Workspace
@@ -54,7 +53,7 @@ Todos los alumnos comparten:
 1 catálogo training
 ```
 
-Cada alumno trabaja únicamente en:
+Cada participante trabaja únicamente en:
 
 ```text
 training.<student_id>
@@ -90,7 +89,7 @@ No modifiques:
 training.shared
 ```
 
-ni objetos de otros alumnos.
+ni objetos de otros participantes.
 
 ---
 
@@ -184,13 +183,13 @@ Añade un pedido:
 ```sql
 INSERT INTO training.<student_id>.orders_delta
 VALUES (
-    101,
-    'C050',
-    'ES',
-    'NEW',
-    2,
-    CAST(75.50 AS DECIMAL(10,2)),
-    DATE '2026-09-24'
+ 101,
+ 'C050',
+ 'ES',
+ 'NEW',
+ 2,
+ CAST(75.50 AS DECIMAL(10,2)),
+ DATE '2026-09-24'
 );
 ```
 
@@ -285,13 +284,13 @@ Ejecuta:
 
 ```sql
 CREATE OR REPLACE TABLE training.<student_id>.orders_updates (
-    order_id BIGINT,
-    customer_id STRING,
-    country STRING,
-    status STRING,
-    quantity INT,
-    unit_price DECIMAL(10,2),
-    order_date DATE
+ order_id BIGINT,
+ customer_id STRING,
+ country STRING,
+ status STRING,
+ quantity INT,
+ unit_price DECIMAL(10,2),
+ order_date DATE
 )
 USING DELTA;
 ```
@@ -301,9 +300,9 @@ Inserta:
 ```sql
 INSERT INTO training.<student_id>.orders_updates
 VALUES
-    (1, 'C001', 'ES', 'SHIPPED', 3, 49.90, DATE '2026-09-01'),
-    (2, 'C002', 'PT', 'CANCELLED', 1, 89.00, DATE '2026-09-02'),
-    (200, 'C200', 'FR', 'NEW', 4, 19.95, DATE '2026-09-24');
+ (1, 'C001', 'ES', 'SHIPPED', 3, 49.90, DATE '2026-09-01'),
+ (2, 'C002', 'PT', 'CANCELLED', 1, 89.00, DATE '2026-09-02'),
+ (200, 'C200', 'FR', 'NEW', 4, 19.95, DATE '2026-09-24');
 ```
 
 Comprueba:
@@ -326,33 +325,33 @@ USING training.<student_id>.orders_updates AS source
 ON target.order_id = source.order_id
 
 WHEN MATCHED THEN
-  UPDATE SET
-    target.customer_id = source.customer_id,
-    target.country = source.country,
-    target.status = source.status,
-    target.quantity = source.quantity,
-    target.unit_price = source.unit_price,
-    target.order_date = source.order_date
+ UPDATE SET
+ target.customer_id = source.customer_id,
+ target.country = source.country,
+ target.status = source.status,
+ target.quantity = source.quantity,
+ target.unit_price = source.unit_price,
+ target.order_date = source.order_date
 
 WHEN NOT MATCHED THEN
-  INSERT (
-    order_id,
-    customer_id,
-    country,
-    status,
-    quantity,
-    unit_price,
-    order_date
-  )
-  VALUES (
-    source.order_id,
-    source.customer_id,
-    source.country,
-    source.status,
-    source.quantity,
-    source.unit_price,
-    source.order_date
-  );
+ INSERT (
+ order_id,
+ customer_id,
+ country,
+ status,
+ quantity,
+ unit_price,
+ order_date
+ )
+ VALUES (
+ source.order_id,
+ source.customer_id,
+ source.country,
+ source.status,
+ source.quantity,
+ source.unit_price,
+ source.order_date
+ );
 ```
 
 Comprueba:
@@ -389,25 +388,25 @@ Ejecuta:
 ```sql
 INSERT INTO training.<student_id>.orders_delta
 (
-    order_id,
-    customer_id,
-    country,
-    status,
-    quantity,
-    unit_price,
-    order_date,
-    columna_inexistente
+ order_id,
+ customer_id,
+ country,
+ status,
+ quantity,
+ unit_price,
+ order_date,
+ columna_inexistente
 )
 VALUES
 (
-    300,
-    'C300',
-    'ES',
-    'NEW',
-    1,
-    10.00,
-    DATE '2026-09-24',
-    'x'
+ 300,
+ 'C300',
+ 'ES',
+ 'NEW',
+ 1,
+ 10.00,
+ DATE '2026-09-24',
+ 'x'
 );
 ```
 
@@ -457,14 +456,14 @@ Inserta uno nuevo:
 ```sql
 INSERT INTO training.<student_id>.orders_delta
 VALUES (
-    301,
-    'C301',
-    'ES',
-    'NEW',
-    1,
-    25.00,
-    DATE '2026-09-24',
-    'mobile-app'
+ 301,
+ 'C301',
+ 'ES',
+ 'NEW',
+ 1,
+ 25.00,
+ DATE '2026-09-24',
+ 'mobile-app'
 );
 ```
 
@@ -492,30 +491,30 @@ Desde Python:
 from pyspark.sql import functions as F
 
 extra = (
-    spark.createDataFrame(
-        [
-            (400, "C400", "DE", "NEW", 2, 15.50, "2026-09-24", "partner", "campaign-A")
-        ],
-        [
-            "order_id",
-            "customer_id",
-            "country",
-            "status",
-            "quantity",
-            "unit_price",
-            "order_date",
-            "source_system",
-            "campaign"
-        ]
-    )
-    .withColumn(
-        "order_date",
-        F.to_date("order_date")
-    )
-    .withColumn(
-        "unit_price",
-        F.col("unit_price").cast("decimal(10,2)")
-    )
+ spark.createDataFrame(
+ [
+ (400, "C400", "DE", "NEW", 2, 15.50, "2026-09-24", "partner", "campaign-A")
+ ],
+ [
+ "order_id",
+ "customer_id",
+ "country",
+ "status",
+ "quantity",
+ "unit_price",
+ "order_date",
+ "source_system",
+ "campaign"
+ ]
+ )
+ .withColumn(
+ "order_date",
+ F.to_date("order_date")
+ )
+ .withColumn(
+ "unit_price",
+ F.col("unit_price").cast("decimal(10,2)")
+ )
 )
 ```
 
@@ -523,7 +522,7 @@ Primero intenta escribir **sin** evolución:
 
 ```python
 extra.write.mode("append").saveAsTable(
-    "training.<student_id>.orders_delta"
+ "training.<student_id>.orders_delta"
 )
 ```
 
@@ -533,12 +532,12 @@ Ahora:
 
 ```python
 (
-    extra.write
-    .option("mergeSchema", "true")
-    .mode("append")
-    .saveAsTable(
-        "training.<student_id>.orders_delta"
-    )
+ extra.write
+ .option("mergeSchema", "true")
+ .mode("append")
+ .saveAsTable(
+ "training.<student_id>.orders_delta"
+ )
 )
 ```
 
@@ -642,9 +641,9 @@ Comprueba:
 
 ```sql
 SELECT
-    MIN(unit_price),
-    MAX(unit_price),
-    AVG(unit_price)
+ MIN(unit_price),
+ MAX(unit_price),
+ AVG(unit_price)
 FROM training.<student_id>.orders_delta;
 ```
 
@@ -743,7 +742,7 @@ Si no está habilitado y el instructor ha validado que el runtime es compatible:
 ```sql
 ALTER TABLE training.<student_id>.orders_delta
 SET TBLPROPERTIES (
-  'delta.enableDeletionVectors' = true
+ 'delta.enableDeletionVectors' = true
 );
 ```
 
@@ -921,17 +920,17 @@ Explica este flujo:
 
 ```text
 Physical data files
-        +
+ +
 Delta transaction log
-        ↓
+ ↓
 Versioned table
-        ↓
+ ↓
 ACID transactions
-        ↓
+ ↓
 INSERT / UPDATE / DELETE / MERGE
-        ↓
+ ↓
 History / Time Travel / Restore
-        ↓
+ ↓
 Maintenance and optimization
 ```
 
