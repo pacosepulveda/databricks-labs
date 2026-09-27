@@ -1,11 +1,10 @@
-# M03 — Laboratorios Learn by Doing
+# M03 — Laboratorios
 ## Databricks: workspace, compute, Unity Catalog, SQL, Jobs, AI/BI y MLflow
 
-**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion  
-**Documento:** Enunciados para alumnos  
-**Metodología:** Learn by Doing  
-**Modalidad:** Individual  
-**Entorno:** Azure Databricks compartido  
+**Curso:** Databricks — Big Data, Spark, Delta Lake y arquitectura Medallion
+**Documento:** Enunciados para participantes
+**Modalidad:** Individual
+**Entorno:** Azure Databricks compartido
 **Nivel:** Introductorio–intermedio
 
 ---
@@ -48,7 +47,7 @@ No son lo mismo, aunque formen parte de la misma plataforma.
 
 # 2. Entorno compartido
 
-Todos los alumnos utilizan:
+Todos los participantes utilizan:
 
 ```text
 1 Azure Databricks Workspace
@@ -57,7 +56,7 @@ Todos los alumnos utilizan:
 1 catálogo training
 ```
 
-Cada alumno dispone de un schema individual:
+Cada participante dispone de un schema individual:
 
 ```text
 training.<student_id>
@@ -86,9 +85,9 @@ No debes:
 - crear workspaces;
 - cambiar configuración global;
 - crear compute;
-- modificar permisos de otros alumnos;
+- modificar permisos de otros participantes;
 - borrar objetos compartidos;
-- modificar tablas de otros alumnos.
+- modificar tablas de otros participantes.
 
 Aprenderás Databricks trabajando con permisos de usuario realistas.
 
@@ -199,9 +198,9 @@ Comprueba:
 
 ```sql
 SELECT
-    current_user(),
-    current_catalog(),
-    current_schema();
+ current_user(),
+ current_catalog(),
+ current_schema();
 ```
 
 ### Reflexión
@@ -281,9 +280,9 @@ Ejecuta:
 CREATE OR REPLACE TABLE training.<student_id>.m03_demo
 AS
 SELECT
-    id,
-    CONCAT('item-', id) AS item_name,
-    id * 10 AS value
+ id,
+ CONCAT('item-', id) AS item_name,
+ id * 10 AS value
 FROM range(10);
 ```
 
@@ -473,9 +472,9 @@ Ejecuta:
 
 ```sql
 SELECT
-    country,
-    COUNT(*) AS transactions,
-    SUM(quantity * unit_price) AS revenue
+ country,
+ COUNT(*) AS transactions,
+ SUM(quantity * unit_price) AS revenue
 FROM training.shared.sales
 GROUP BY country
 ORDER BY revenue DESC;
@@ -537,8 +536,8 @@ Consulta para los indicadores:
 
 ```sql
 SELECT
-    SUM(quantity * unit_price) AS total_revenue,
-    COUNT(*) AS transactions
+ SUM(quantity * unit_price) AS total_revenue,
+ COUNT(*) AS transactions
 FROM training.shared.sales;
 ```
 
@@ -576,13 +575,13 @@ Contenido:
 from pyspark.sql import functions as F
 
 result = (
-    spark.table("training.shared.sales")
-    .groupBy("country")
-    .agg(
-        F.sum(
-            F.col("quantity") * F.col("unit_price")
-        ).alias("revenue")
-    )
+ spark.table("training.shared.sales")
+ .groupBy("country")
+ .agg(
+ F.sum(
+ F.col("quantity") * F.col("unit_price")
+ ).alias("revenue")
+ )
 )
 
 display(result)
@@ -650,13 +649,13 @@ Modifica el pipeline:
 
 ```python
 result = (
-    spark.table("training.shared.sales")
-    .filter(F.col("country") == country)
-    .agg(
-        F.sum(
-            F.col("quantity") * F.col("unit_price")
-        ).alias("revenue")
-    )
+ spark.table("training.shared.sales")
+ .filter(F.col("country") == country)
+ .agg(
+ F.sum(
+ F.col("quantity") * F.col("unit_price")
+ ).alias("revenue")
+ )
 )
 
 display(result)
@@ -696,9 +695,9 @@ Ejecuta en tu notebook:
 import mlflow
 
 with mlflow.start_run():
-    mlflow.log_param("student", "<student_id>")
-    mlflow.log_param("module", "M03")
-    mlflow.log_metric("sample_metric", 0.85)
+ mlflow.log_param("student", "<student_id>")
+ mlflow.log_param("module", "M03")
+ mlflow.log_metric("sample_metric", 0.85)
 ```
 
 Abre:
@@ -832,13 +831,13 @@ Debes crear:
 
 ```text
 Notebook
-   ↓
+ ↓
 tabla/vista individual
-   ↓
+ ↓
 Lakeflow Job
-   ↓
+ ↓
 SQL Query
-   ↓
+ ↓
 Dashboard
 ```
 
@@ -876,21 +875,21 @@ Dibuja o explica este flujo:
 
 ```text
 User
-  ↓
+ ↓
 Workspace
-  ├── Notebook
-  ├── Job
-  ├── Query
-  └── Dashboard
-       │
-       ▼
-    Compute
-       │
-       ▼
-  Unity Catalog
-       │
-       ▼
-     Data
+ ├── Notebook
+ ├── Job
+ ├── Query
+ └── Dashboard
+ │
+ ▼
+ Compute
+ │
+ ▼
+ Unity Catalog
+ │
+ ▼
+ Data
 ```
 
 Añade:
