@@ -17,7 +17,3 @@ Repositorio de enunciados de laboratorio del curso:
 Los laboratorios están diseñados para realizarse de forma individual en los entornos facilitados durante la formación.
 
 Cuando aparezca `<student_id>`, sustitúyelo por el identificador asignado.
-
-## Importante
-
-Este repositorio contiene únicamente los **enunciados**. Las guías de instructor y las soluciones no se publican aquí.
