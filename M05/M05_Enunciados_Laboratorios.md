@@ -241,7 +241,7 @@ bronze_transactions = (
  )
  .withColumn(
  "_source_file",
- F.input_file_name()
+ F.col("_metadata.file_path")
  )
 )
 ```
@@ -295,7 +295,7 @@ customers_raw = (
  "/Volumes/training/<student_id>_bronze/landing/reference/customers.csv"
  )
  .withColumn("_ingest_timestamp", F.current_timestamp())
- .withColumn("_source_file", F.input_file_name())
+ .withColumn("_source_file", F.col("_metadata.file_path"))
 )
 
 customers_raw.write \
@@ -316,7 +316,7 @@ products_raw = (
  "/Volumes/training/<student_id>_bronze/landing/reference/products.csv"
  )
  .withColumn("_ingest_timestamp", F.current_timestamp())
- .withColumn("_source_file", F.input_file_name())
+ .withColumn("_source_file", F.col("_metadata.file_path"))
 )
 
 products_raw.write \
