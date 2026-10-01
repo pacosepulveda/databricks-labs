@@ -304,13 +304,13 @@ day2_raw = (
 day2_typed = (
     day2_raw
     .select(
-        F.col("transaction_id").cast("long").alias("transaction_id"),
+        F.expr("try_cast(transaction_id as bigint)").alias("transaction_id"),
         "customer_id",
         "product_id",
-        F.col("quantity").cast("int").alias("quantity"),
-        F.col("unit_price").cast("decimal(12,2)").alias("unit_price"),
+        F.expr("try_cast(quantity as int)").alias("quantity"),
+        F.expr("try_cast(unit_price as decimal(12,2))").alias("unit_price"),
         F.upper(F.trim(F.col("country"))).alias("country"),
-        F.to_date("transaction_date").alias("transaction_date"),
+        F.expr("try_cast(transaction_date as date)").alias("transaction_date"),
         "_ingest_timestamp",
         "_source_file"
     )
@@ -321,7 +321,9 @@ day2_clean = (
     .filter(
         F.col("transaction_id").isNotNull()
         & F.col("customer_id").isNotNull()
+        & (F.trim(F.col("customer_id")) != "")
         & F.col("product_id").isNotNull()
+        & (F.trim(F.col("product_id")) != "")
         & (F.col("quantity") > 0)
         & (F.col("unit_price") >= 0)
         & F.col("transaction_date").isNotNull()
@@ -553,13 +555,13 @@ products_raw.write.mode("overwrite").saveAsTable(
 ```sql
 CREATE OR REPLACE TABLE training.<student_id>_silver.transactions_typed AS
 SELECT
- CAST(transaction_id AS BIGINT) AS transaction_id,
+ TRY_CAST(transaction_id AS BIGINT) AS transaction_id,
  customer_id,
  product_id,
- CAST(quantity AS INT) AS quantity,
- CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
+ TRY_CAST(quantity AS INT) AS quantity,
+ TRY_CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
  UPPER(TRIM(country)) AS country,
- TO_DATE(transaction_date) AS transaction_date,
+ TRY_CAST(transaction_date AS DATE) AS transaction_date,
  _ingest_timestamp,
  _source_file
 FROM training.<student_id>_bronze.transactions_raw;
@@ -572,7 +574,9 @@ FROM training.<student_id>_silver.transactions_typed
 WHERE
  transaction_id IS NULL
  OR customer_id IS NULL
+ OR TRIM(customer_id) = ''
  OR product_id IS NULL
+ OR TRIM(product_id) = ''
  OR quantity <= 0
  OR unit_price < 0
  OR transaction_date IS NULL;
@@ -592,7 +596,9 @@ FROM (
  WHERE
    transaction_id IS NOT NULL
    AND customer_id IS NOT NULL
+   AND TRIM(customer_id) <> ''
    AND product_id IS NOT NULL
+   AND TRIM(product_id) <> ''
    AND quantity > 0
    AND unit_price >= 0
    AND transaction_date IS NOT NULL
@@ -720,7 +726,9 @@ FROM training.<student_id>_silver.transactions_typed
 WHERE
  transaction_id IS NULL
  OR customer_id IS NULL
+ OR TRIM(customer_id) = ''
  OR product_id IS NULL
+ OR TRIM(product_id) = ''
  OR quantity <= 0
  OR unit_price < 0
  OR transaction_date IS NULL;
@@ -735,7 +743,9 @@ FROM training.<student_id>_silver.transactions_typed
 WHERE
  transaction_id IS NULL
  OR customer_id IS NULL
+ OR TRIM(customer_id) = ''
  OR product_id IS NULL
+ OR TRIM(product_id) = ''
  OR quantity <= 0
  OR unit_price < 0
  OR transaction_date IS NULL;
@@ -788,20 +798,22 @@ inc_raw = (
 inc_clean = (
     inc_raw
     .select(
-        F.col("transaction_id").cast("long").alias("transaction_id"),
+        F.expr("try_cast(transaction_id as bigint)").alias("transaction_id"),
         "customer_id",
         "product_id",
-        F.col("quantity").cast("int").alias("quantity"),
-        F.col("unit_price").cast("decimal(12,2)").alias("unit_price"),
+        F.expr("try_cast(quantity as int)").alias("quantity"),
+        F.expr("try_cast(unit_price as decimal(12,2))").alias("unit_price"),
         F.upper(F.trim("country")).alias("country"),
-        F.to_date("transaction_date").alias("transaction_date"),
+        F.expr("try_cast(transaction_date as date)").alias("transaction_date"),
         "_ingest_timestamp",
         "_source_file"
     )
     .filter(
         F.col("transaction_id").isNotNull()
         & F.col("customer_id").isNotNull()
+        & (F.trim(F.col("customer_id")) != "")
         & F.col("product_id").isNotNull()
+        & (F.trim(F.col("product_id")) != "")
         & (F.col("quantity") > 0)
         & (F.col("unit_price") >= 0)
         & F.col("transaction_date").isNotNull()
@@ -966,13 +978,13 @@ WHERE _source_file LIKE '%transactions_final.csv%';
 final_typed = (
     final_raw
     .select(
-        F.col("transaction_id").cast("long").alias("transaction_id"),
+        F.expr("try_cast(transaction_id as bigint)").alias("transaction_id"),
         "customer_id",
         "product_id",
-        F.col("quantity").cast("int").alias("quantity"),
-        F.col("unit_price").cast("decimal(12,2)").alias("unit_price"),
+        F.expr("try_cast(quantity as int)").alias("quantity"),
+        F.expr("try_cast(unit_price as decimal(12,2))").alias("unit_price"),
         F.upper(F.trim("country")).alias("country"),
-        F.to_date("transaction_date").alias("transaction_date"),
+        F.expr("try_cast(transaction_date as date)").alias("transaction_date"),
         "_ingest_timestamp",
         "_source_file"
     )
@@ -981,7 +993,9 @@ final_typed = (
 final_invalid = final_typed.filter(
     F.col("transaction_id").isNull()
     | F.col("customer_id").isNull()
+    | (F.trim(F.col("customer_id")) == "")
     | F.col("product_id").isNull()
+    | (F.trim(F.col("product_id")) == "")
     | (F.col("quantity") <= 0)
     | (F.col("unit_price") < 0)
     | F.col("transaction_date").isNull()
@@ -994,7 +1008,9 @@ final_clean = (
     .filter(
         F.col("transaction_id").isNotNull()
         & F.col("customer_id").isNotNull()
+        & (F.trim(F.col("customer_id")) != "")
         & F.col("product_id").isNotNull()
+        & (F.trim(F.col("product_id")) != "")
         & (F.col("quantity") > 0)
         & (F.col("unit_price") >= 0)
         & F.col("transaction_date").isNotNull()
@@ -1115,7 +1131,9 @@ FROM training.<student_id>_silver.transactions
 WHERE
  transaction_id IS NULL
  OR customer_id IS NULL
+ OR TRIM(customer_id) = ''
  OR product_id IS NULL
+ OR TRIM(product_id) = ''
  OR quantity <= 0
  OR unit_price < 0
  OR transaction_date IS NULL;
