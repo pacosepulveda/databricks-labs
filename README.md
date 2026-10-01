@@ -24,3 +24,20 @@ Los laboratorios están diseñados para realizarse de forma individual en los en
 Cuando aparezca `<student_id>`, sustitúyelo por el identificador asignado.
 
 Las soluciones incluyen las respuestas de los ejercicios guiados, las prácticas autónomas y los retos finales. En los resultados que dependen del runtime, del estado del compute o de los datos disponibles, se incluye el procedimiento de comprobación en lugar de fijar un valor que pueda cambiar.
+
+
+## Machine Learning
+
+Laboratorios adicionales de Machine Learning:
+
+- **LAB_ML01 — Pipeline end-to-end de Machine Learning**  
+  [Enunciado](ML/LAB_ML01_Enunciado.md) · [Notebook](ML/LAB_ML01_Notebook.ipynb) · [Solución guiada](ML/LAB_ML01_Solucion_Guiada.ipynb)
+- **LAB_ML02 — Redes neuronales con PyTorch**  
+  [Enunciado](ML/LAB_ML02_Enunciado.md) · [Notebook](ML/LAB_ML02_Notebook.ipynb) · [Solución guiada](ML/LAB_ML02_Solucion_Guiada.ipynb)
+
+Los dos laboratorios utilizan los datasets de churn disponibles en:
+
+```text
+/Volumes/training/shared/source/ml/customer_churn_gold.csv
+/Volumes/training/shared/source/ml/customer_churn_scoring.csv
+```
