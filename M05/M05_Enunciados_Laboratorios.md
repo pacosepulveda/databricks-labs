@@ -692,8 +692,6 @@ Carga exclusivamente el nuevo lote:
 
 ```python
 from pyspark.sql import functions as F
-from pyspark.sql.window import Window
-
 day2_raw = (
     spark.read
     .option("header", "true")
@@ -721,30 +719,26 @@ day2_typed = (
 day2_valid = day2_typed.filter(
     F.col("transaction_id").isNotNull()
     & F.col("customer_id").isNotNull()
+    & (F.trim(F.col("customer_id")) != "")
     & F.col("product_id").isNotNull()
+    & (F.trim(F.col("product_id")) != "")
     & (F.col("quantity") > 0)
     & (F.col("unit_price") >= 0)
     & F.col("transaction_date").isNotNull()
 )
 ```
 
-Como el lote contiene un duplicado, deduplica antes del `MERGE` para evitar que varias filas source puedan coincidir con la misma fila target:
+Como el lote contiene un duplicado, deduplica antes del `MERGE` para evitar que varias filas source puedan coincidir con la misma fila target.
+
+En este laboratorio suponemos que el duplicado representa el mismo evento. Por eso basta con conservar una única fila por `transaction_id`:
 
 ```python
-w = Window.partitionBy("transaction_id").orderBy(
-    F.col("_ingest_timestamp").desc(),
-    F.col("_source_file").desc()
-)
-
-day2_clean = (
-    day2_valid
-    .withColumn("_rn", F.row_number().over(w))
-    .filter(F.col("_rn") == 1)
-    .drop("_rn")
-)
+day2_clean = day2_valid.dropDuplicates(["transaction_id"])
 
 day2_clean.createOrReplaceTempView("day2_clean")
 ```
+
+> En un sistema real, si dos filas con el mismo `transaction_id` representan versiones distintas, la deduplicación debe utilizar una columna de secuencia, versión o timestamp de negocio para decidir de forma determinista cuál conservar.
 
 Aplica:
 
