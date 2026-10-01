@@ -373,13 +373,13 @@ Ejecuta:
 CREATE OR REPLACE TABLE training.<student_id>_silver.transactions_typed
 AS
 SELECT
- CAST(transaction_id AS BIGINT) AS transaction_id,
+ TRY_CAST(transaction_id AS BIGINT) AS transaction_id,
  customer_id,
  product_id,
- CAST(quantity AS INT) AS quantity,
- CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
+ TRY_CAST(quantity AS INT) AS quantity,
+ TRY_CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
  UPPER(TRIM(country)) AS country,
- TO_DATE(transaction_date) AS transaction_date,
+ TRY_CAST(transaction_date AS DATE) AS transaction_date,
  _ingest_timestamp,
  _source_file
 FROM training.<student_id>_bronze.transactions_raw;
@@ -413,7 +413,9 @@ FROM training.<student_id>_silver.transactions_typed
 WHERE
  transaction_id IS NULL
  OR customer_id IS NULL
+ OR TRIM(customer_id) = ''
  OR product_id IS NULL
+ OR TRIM(product_id) = ''
  OR quantity <= 0
  OR unit_price < 0
  OR transaction_date IS NULL;
@@ -436,7 +438,9 @@ FROM training.<student_id>_silver.transactions_typed
 WHERE
  transaction_id IS NOT NULL
  AND customer_id IS NOT NULL
+ AND TRIM(customer_id) <> ''
  AND product_id IS NOT NULL
+ AND TRIM(product_id) <> ''
  AND quantity > 0
  AND unit_price >= 0
  AND transaction_date IS NOT NULL;
@@ -684,11 +688,61 @@ El instructor ha preparado `transactions_day2.csv` con:
 - un duplicado;
 - un registro inválido.
 
-Carga el nuevo lote en un DataFrame y aplícale las mismas reglas de tipado/calidad.
-
-Después crea una vista temporal:
+Carga exclusivamente el nuevo lote:
 
 ```python
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+
+day2_raw = (
+    spark.read
+    .option("header", "true")
+    .option("inferSchema", "false")
+    .csv(
+        "/Volumes/training/<student_id>_bronze/landing/transactions/transactions_day2.csv"
+    )
+    .withColumn("_ingest_timestamp", F.current_timestamp())
+    .withColumn("_source_file", F.col("_metadata.file_path"))
+)
+```
+
+Aplica las mismas reglas de tipado y calidad utilizadas en Silver:
+
+```python
+day2_typed = (
+    day2_raw
+    .withColumn("transaction_id", F.expr("try_cast(transaction_id as bigint)"))
+    .withColumn("quantity", F.expr("try_cast(quantity as int)"))
+    .withColumn("unit_price", F.expr("try_cast(unit_price as decimal(12,2))"))
+    .withColumn("country", F.upper(F.trim("country")))
+    .withColumn("transaction_date", F.expr("try_cast(transaction_date as date)"))
+)
+
+day2_valid = day2_typed.filter(
+    F.col("transaction_id").isNotNull()
+    & F.col("customer_id").isNotNull()
+    & F.col("product_id").isNotNull()
+    & (F.col("quantity") > 0)
+    & (F.col("unit_price") >= 0)
+    & F.col("transaction_date").isNotNull()
+)
+```
+
+Como el lote contiene un duplicado, deduplica antes del `MERGE` para evitar que varias filas source puedan coincidir con la misma fila target:
+
+```python
+w = Window.partitionBy("transaction_id").orderBy(
+    F.col("_ingest_timestamp").desc(),
+    F.col("_source_file").desc()
+)
+
+day2_clean = (
+    day2_valid
+    .withColumn("_rn", F.row_number().over(w))
+    .filter(F.col("_rn") == 1)
+    .drop("_rn")
+)
+
 day2_clean.createOrReplaceTempView("day2_clean")
 ```
 
@@ -718,9 +772,39 @@ Relaciona este ejercicio con el `MERGE` de M04.
 
 ---
 
-# 19. Ejercicio 15 — Recalcular Gold
+# 19. Ejercicio 15 — Recalcular Silver enriquecida y Gold
 
-Vuelve a crear:
+El `MERGE` ha actualizado:
+
+```text
+training.<student_id>_silver.transactions
+```
+
+pero `sales_enriched` sigue siendo una tabla materializada creada anteriormente. Vuelve a generarla antes de recalcular Gold:
+
+```sql
+CREATE OR REPLACE TABLE training.<student_id>_silver.sales_enriched
+AS
+SELECT
+ t.transaction_id,
+ t.transaction_date,
+ t.customer_id,
+ c.customer_name,
+ t.product_id,
+ p.product_name,
+ p.category,
+ t.country,
+ t.quantity,
+ t.unit_price,
+ t.quantity * t.unit_price AS amount
+FROM training.<student_id>_silver.transactions t
+LEFT JOIN training.<student_id>_silver.customers c
+ ON t.customer_id = c.customer_id
+LEFT JOIN training.<student_id>_silver.products p
+ ON t.product_id = p.product_id;
+```
+
+Después vuelve a crear:
 
 ```text
 daily_sales
@@ -841,13 +925,13 @@ training.<student_id>_silver.transactions_stream_clean (
 )
 AS
 SELECT
- CAST(transaction_id AS BIGINT) AS transaction_id,
+ TRY_CAST(transaction_id AS BIGINT) AS transaction_id,
  customer_id,
  product_id,
- CAST(quantity AS INT) AS quantity,
- CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
+ TRY_CAST(quantity AS INT) AS quantity,
+ TRY_CAST(unit_price AS DECIMAL(12,2)) AS unit_price,
  UPPER(TRIM(country)) AS country,
- TO_DATE(transaction_date) AS transaction_date,
+ TRY_CAST(transaction_date AS DATE) AS transaction_date,
  _source_file,
  _ingest_timestamp
 FROM STREAM(
